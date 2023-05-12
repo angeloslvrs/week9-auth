@@ -9,22 +9,41 @@ class LoginPage extends StatefulWidget {
   _LoginPageState createState() => _LoginPageState();
 }
 
+extension EmailValidator on String {
+  bool isValidEmail() {
+    return RegExp(
+            r'^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$')
+        .hasMatch(this);
+  }
+}
+
 class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     TextEditingController emailController = TextEditingController();
     TextEditingController passwordController = TextEditingController();
 
-    final email = TextField(
+
+    final email = TextFormField(
       key: const Key('emailField'),
+      autovalidateMode: AutovalidateMode.always,
+      validator: (input) => input!.isValidEmail() ? null : "Check your email",
       controller: emailController,
       decoration: const InputDecoration(
         hintText: "Email",
       ),
     );
 
-    final password = TextField(
+
+    final password = TextFormField(
       key: const Key('pwField'),
+            validator: (value){
+                if (value == null || value.isEmpty || value.length > 6) {
+                  return 'Please make sure your password is at least 6 characters';
+                }
+                return null;
+      },
+      autovalidateMode: AutovalidateMode.always,
       controller: passwordController,
       obscureText: true,
       decoration: const InputDecoration(
@@ -37,6 +56,11 @@ class _LoginPageState extends State<LoginPage> {
       padding: const EdgeInsets.symmetric(vertical: 16.0),
       child: ElevatedButton(
         onPressed: () async {
+
+          await context.read<AuthProvider>().signIn(
+                emailController.text.trim(),
+                passwordController.text.trim(),
+              );
 
         },
         child: const Text('Log In', style: TextStyle(color: Colors.white)),
